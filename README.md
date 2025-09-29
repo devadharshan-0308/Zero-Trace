@@ -1,6 +1,6 @@
 # Zero-Trace - Professional E-Waste Data Sanitization
 
-Welcome to Zero-Trace, a PyQt5-powered secure data sanitization platform infused with gamified environmental impact tracking and professional grade security algorithms. Whether you're wiping devices, tracking CO2 savings, or generating compliance certificates, this tool brings enterprise security and environmental responsibility into perfect harmony.
+Welcome to Zero-Trace, a secure data sanitization platform infused with gamified environmental impact tracking and professional grade security algorithms. Whether you're wiping devices, tracking CO2 savings, or generating compliance certificates, this tool brings enterprise security and environmental responsibility into perfect harmony.
 
 ## About the Project
 
