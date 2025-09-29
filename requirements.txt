@@ -1,0 +1,17 @@
+# SecureWipe India - Unified Data Destruction System
+# Requirements for Windows/Linux/Mac
+
+# Core GUI Framework
+PyQt5>=5.15.0
+
+# System Information and Process Management
+psutil>=5.9.0
+
+# Windows-specific APIs (install only on Windows)
+pywin32>=305; sys_platform == 'win32'
+
+# Optional: For enhanced UI features
+# PyQt5-tools>=5.15.0
+
+# Optional: For creating standalone executables
+# pyinstaller>=5.0
