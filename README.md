@@ -1,15 +1,21 @@
 # Zero Trace - Secure Data Sanitization System
 
-A comprehensive data sanitization and secure file wiping application built for the Smart India Hackathon 2025. Zero Trace provides military-grade data deletion capabilities with an intuitive GUI interface, environmental impact tracking, and gamification features.
+A comprehensive cross-platform data sanitization and secure file wiping application built for the Smart India Hackathon 2025. Zero Trace provides military-grade data deletion capabilities with an intuitive GUI interface, Android companion app, environmental impact tracking, and enhanced audit logging.
 
-## Features
+## 🌟 Features
 
 ### Core Functionality
 - **Secure File Wiping**: Multiple data sanitization methods (DoD 5220.22-M, Gutmann, Random)
 - **Device Sanitization**: Complete drive wiping capabilities
 - **Free Space Cleaning**: Securely wipe unused disk space
 - **Real-time Progress Tracking**: Visual progress bars and status updates
-- **Audit Logging**: Comprehensive operation logs for compliance
+- **Enhanced Audit Logging**: Comprehensive operation logs with tamper detection
+
+### Cross-Platform Integration
+- **Desktop Application**: Professional PyQt5-based GUI
+- **Android Companion**: Mobile secure file wiping with USB bridge
+- **Cross-Platform Communication**: TCP socket bridge for unified operations
+- **Unified Security Standards**: Consistent algorithms across platforms
 
 ### User Interface
 - **Modern GUI**: Built with PyQt5 for a professional user experience
@@ -75,20 +81,30 @@ A comprehensive data sanitization and secure file wiping application built for t
 - **Random Data**: Customizable passes with random data patterns
 - **Zero Fill**: Single-pass zero overwrite for quick sanitization
 
-## Project Structure
+## 📁 Project Structure
 
 ```
 zero-trace/
-├── zero_trace_gui.py              # Main GUI application
-├── zero_trace_enhanced.py         # Enhanced version with improved UI
-├── file_secure_wipe_optimized.py  # Core wiping engine
-├── chatbot3.py                    # Help system
-├── gamification_engine.py         # Achievement system
-├── professional_gamification.py   # Environmental dashboard
-├── audit_logger.py                # Compliance and logging
-├── main_fixed.py                  # Alternative entry point
-├── requirements.txt               # Python dependencies
-└── README.md                      # This file
+├── Desktop Application/
+│   ├── zero_trace_gui.py              # Main GUI application
+│   ├── zero_trace_enhanced.py         # Enhanced version with improved UI
+│   ├── file_secure_wipe_optimized.py  # Core wiping engine
+│   ├── chatbot3.py                    # Help system
+│   ├── gamification_engine.py         # Achievement system
+│   ├── professional_gamification.py   # Environmental dashboard
+│   ├── audit_logger.py                # Enhanced compliance and logging
+│   ├── main_fixed.py                  # Alternative entry point
+│   └── certificate_generator.py       # Certificate generation
+├── Android_Companion/
+│   ├── AndriodBridge.py.txt           # Desktop-mobile bridge
+│   ├── AndriodManifest.xml.txt        # Android app permissions
+│   ├── MainActivity.kt.txt            # Android main activity
+│   ├── WipeService.kt.txt             # Mobile secure wipe service
+│   ├── activity_main.xml.txt          # Mobile UI layout
+│   └── wipe_text_files.py.txt         # Mobile file wiper CLI
+├── requirements.txt                   # Python dependencies
+├── LICENSE                            # MIT License
+└── README.md                          # This file
 ```
 
 ## Contributing
