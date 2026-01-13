@@ -1,0 +1,128 @@
+wipe_text_files.py
+import subprocess
+import socket
+import json
+import sys
+import os
+
+ADB_PATH = "adb"
+ANDROID_SERVICE_PORT = 5555
+
+def main():
+    print("🔍 TEXT FILE WIPE TOOL")
+    print("=" * 40)
+    
+    # Detect device
+    try:
+        result = subprocess.run([ADB_PATH, "devices"], capture_output=True, text=True)
+        devices = [line for line in result.stdout.split('\n') if "device" in line and "devices" not in line]
+        if not devices:
+            print("❌ No Android device found")
+            return
+        
+        device_id = devices[0].split('\t')[0]
+        print(f"✅ Device: {device_id}")
+    except:
+        print("❌ ADB not found or device not connected")
+        return
+
+    # Forward port
+    try:
+        subprocess.run([ADB_PATH, "-s", device_id, "forward", f"tcp:{ANDROID_SERVICE_PORT}", f"tcp:{ANDROID_SERVICE_PORT}"], check=True)
+        print("✅ Port forwarded")
+    except:
+        print("⚠️ Port forwarding failed (may already be active)")
+
+    # Get file path from user
+    if len(sys.argv) > 1:
+        file_path = sys.argv[1]
+    else:
+        print("\n📁 Enter the path to text file you want to wipe:")
+        print("   Example: /sdcard/Downloads/secret.txt")
+        print("   Example: /sdcard/Documents/notes.txt")
+        print("   Example: /sdcard/backup.txt")
+        file_path = input("File path: ").strip()
+
+    # Validate it's a text file
+    if not file_path.lower().endswith('.txt'):
+        print(f"❌ '{file_path}' is not a .txt file")
+        print("Only .txt files are supported")
+        return
+
+    # Check if file exists
+    check_cmd = [ADB_PATH, "-s", device_id, "shell", f"ls \"{file_path}\""]
+    result = subprocess.run(check_cmd, capture_output=True, text=True)
+    
+    if "No such file" in result.stderr or result.returncode != 0:
+        print(f"❌ File not found: {file_path}")
+        print("Please check the path and try again")
+        return
+
+    print(f"✅ File found: {file_path}")
+
+    # Get file info
+    info_cmd = [ADB_PATH, "-s", device_id, "shell", f"ls -la \"{file_path}\""]
+    info_result = subprocess.run(info_cmd, capture_output=True, text=True)
+    print(f"📊 File info: {info_result.stdout.strip()}")
+
+    # Confirm deletion
+    print(f"\n⚠️  WARNING: This will PERMANENTLY DELETE the file")
+    confirm = input("Type 'YES' to continue: ")
+    if confirm != 'YES':
+        print("❌ Cancelled")
+        return
+
+    # Send wipe command
+    print(f"\n🗑️  Securely wiping {file_path}...")
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.settimeout(15)
+        sock.connect(('127.0.0.1', ANDROID_SERVICE_PORT))
+        
+        command = json.dumps({"action": "wipe", "path": file_path})
+        sock.send((command + '\n').encode())
+        
+        response = sock.recv(4096).decode()
+        result = json.loads(response)
+        
+        print(f"🔧 Result: {result}")
+        
+        if result.get("status") == "success":
+            print("🎉 SUCCESS: Text file securely wiped and deleted!")
+            
+            # Verify deletion
+            verify_cmd = [ADB_PATH, "-s", device_id, "shell", f"ls \"{file_path}\""]
+            verify_result = subprocess.run(verify_cmd, capture_output=True, text=True)
+            if "No such file" in verify_result.stderr:
+                print("✅ Verification: File no longer exists")
+            else:
+                print("⚠️  File may still exist (check manually)")
+                
+        else:
+            print(f"❌ Failed: {result.get('message')}")
+            
+        sock.close()
+        
+    except Exception as e:
+        print(f"❌ Error: {e}")
+
+def list_text_files():
+    """Helper function to find text files on device"""
+    print("\n🔍 Searching for text files on device...")
+    
+    result = subprocess.run([ADB_PATH, "shell", "find /sdcard -name '*.txt' -type f 2>/dev/null | head -20"], 
+                          capture_output=True, text=True)
+    
+    if result.stdout.strip():
+        print("Found text files:")
+        for file in result.stdout.strip().split('\n'):
+            if file:
+                print(f"  📄 {file}")
+    else:
+        print("No text files found in /sdcard")
+
+if __name__ == "__main__":
+    if len(sys.argv) > 1 and sys.argv[1] == "--list":
+        list_text_files()
+    else:
+        main()

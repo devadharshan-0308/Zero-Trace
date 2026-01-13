@@ -1,0 +1,100 @@
+MainActivity.kt
+package com.example.securewipecompanion
+
+import android.content.Intent
+import android.net.Uri
+import android.os.Bundle
+import android.widget.Button
+import android.widget.TextView
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
+import java.io.File
+
+class MainActivity : AppCompatActivity() {
+
+    private lateinit var pickFileButton: Button
+    private lateinit var startServiceButton: Button
+    private lateinit var selectedFilePathTextView: TextView
+    private var selectedFileUri: Uri? = null
+    private var selectedFilePath: String? = null
+
+    private val pickFileLauncher =
+        registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+            uri?.let {
+                selectedFileUri = it
+                selectedFilePath = getFilePathFromUri(it)
+
+                // Check if it's a text file
+                if (isTextFile(selectedFilePath)) {
+                    selectedFilePathTextView.text = "Selected TEXT file:\n$selectedFilePath\n\nClick 'Start WipeService' to securely delete"
+                    Toast.makeText(this@MainActivity, "Text file selected successfully", Toast.LENGTH_SHORT).show()
+                } else {
+                    selectedFilePathTextView.text = "Selected file (NOT text):\n$selectedFilePath\n\nOnly text files are supported"
+                    Toast.makeText(this@MainActivity, "Please select a .txt file", Toast.LENGTH_LONG).show()
+                    selectedFileUri = null
+                    selectedFilePath = null
+                }
+            } ?: run {
+                Toast.makeText(this@MainActivity, "No file selected", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        pickFileButton = findViewById(R.id.pickFileButton)
+        startServiceButton = findViewById(R.id.startServiceButton)
+        selectedFilePathTextView = findViewById(R.id.selectedFilePathTextView)
+
+        // Set initial instructions
+        selectedFilePathTextView.text = "Instructions:\n1. Click 'Pick file to wipe'\n2. Select any .txt file from your device\n3. Click 'Start WipeService' to securely delete it\n\nSupported: Any .txt file in internal storage"
+
+        pickFileButton.setOnClickListener {
+            // Only show text files in file picker
+            pickFileLauncher.launch(arrayOf("text/plain", "text/*"))
+        }
+
+        startServiceButton.setOnClickListener {
+            if (selectedFilePath != null && selectedFileUri != null) {
+                startWipeService()
+            } else {
+                Toast.makeText(this, "Please select a text file first", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun isTextFile(filePath: String?): Boolean {
+        return filePath?.endsWith(".txt", ignoreCase = true) == true ||
+                filePath?.endsWith(".text", ignoreCase = true) == true
+    }
+
+    private fun getFilePathFromUri(uri: Uri): String? {
+        return try {
+            contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+                if (cursor.moveToFirst()) {
+                    val displayNameIndex = cursor.getColumnIndexOrThrow("_display_name")
+                    cursor.getString(displayNameIndex)
+                } else {
+                    null
+                }
+            } ?: uri.path
+        } catch (e: Exception) {
+            uri.path
+        }
+    }
+
+    private fun startWipeService() {
+        val intent = Intent(this, WipeService::class.java).apply {
+            putExtra("file_path", selectedFilePath)
+            putExtra("file_uri", selectedFileUri.toString())
+        }
+        startService(intent)
+        Toast.makeText(this, "Securely wiping text file...", Toast.LENGTH_LONG).show()
+
+        // Reset selection after starting service
+        selectedFileUri = null
+        selectedFilePath = null
+        selectedFilePathTextView.text = "File wipe started!\n\nSelect another text file to continue wiping..."
+    }
