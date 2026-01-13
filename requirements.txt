@@ -1,0 +1,4 @@
+PyQt5==5.15.9
+qrcode[pil]==7.4.2
+reportlab==4.0.4
+pathlib2==2.3.7
